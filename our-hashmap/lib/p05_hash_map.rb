@@ -10,15 +10,30 @@ class HashMap
   end
 
   def include?(key)
+    @store[key.hash % num_buckets].include?(key)
   end
 
   def set(key, val)
+    unless include?(key)
+      resize! if @count == num_buckets - 1 #should rehash values
+      @store[key.hash % num_buckets].append(key, val)
+      @count += 1
+    else
+      # delete(key)
+      # @store[key.hash % num_buckets].append(key, val)
+      # @count += 1
+    end
   end
 
   def get(key)
+    @store[key.hash % num_buckets].get(key)
   end
 
   def delete(key)
+    if include?(key)
+      @store[key.hash % num_buckets].remove(key)
+      @count -= 1
+    end
   end
 
   def each
@@ -42,6 +57,7 @@ class HashMap
   end
 
   def resize!
+    @store += Array.new(num_buckets) { LinkedList.new }
   end
 
   def bucket(key)
