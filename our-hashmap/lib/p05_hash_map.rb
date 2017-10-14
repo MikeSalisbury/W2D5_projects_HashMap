@@ -2,6 +2,7 @@ require_relative 'p02_hashing'
 require_relative 'p04_linked_list'
 
 class HashMap
+  include Enumerable
   attr_reader :count
 
   def initialize(num_buckets = 8)
@@ -19,9 +20,8 @@ class HashMap
       @store[key.hash % num_buckets].append(key, val)
       @count += 1
     else
-      # delete(key)
-      # @store[key.hash % num_buckets].append(key, val)
-      # @count += 1
+      delete(key)
+      set(key, val)
     end
   end
 
@@ -36,7 +36,19 @@ class HashMap
     end
   end
 
-  def each
+  def each(&prc) #called on each LinkedList #{|k, v| result << [k, v]}
+    key_values = []
+
+    num_buckets.times do |idx|
+      key_values << prc.call(@store[idx].first) #each iterated item is a linked list - we can
+      next_node = @store[idx].first.next
+      until next_node == @store[idx].tail
+        key_values << prc.call(next_node)
+        next_node = next_node.next
+      end
+    end
+
+    p key_values
   end
 
   # uncomment when you have Enumerable included
@@ -58,6 +70,15 @@ class HashMap
 
   def resize!
     @store += Array.new(num_buckets) { LinkedList.new }
+    @count.times do |idx|
+      list_head = @store[idx].first
+      set(list_head.key, list_head.val) #each iterated item is a linked list - we can
+      next_node = list_head.next
+      until next_node == @store[idx].last
+        set(next_node.key, next_node.val)
+        next_node = next_node.next
+      end
+    end
   end
 
   def bucket(key)

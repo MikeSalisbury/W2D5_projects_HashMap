@@ -31,6 +31,8 @@ end
 
 class LinkedList
   include Enumerable
+  attr_reader :head
+
   def initialize
     @head = Node.new
     @tail = Node.new
@@ -44,26 +46,22 @@ class LinkedList
   end
 
   def first
-    if @head.val.nil?
-      @head.next
-    else
-      @head
-    end
+    @head.next
   end
 
   def last
-    @tail
+    @tail.prev
   end
 
   def empty?
-    @tail.val.nil?
+    last.val.nil?
   end
 
   def get(key)
-    if @head.key == key
-      return @head.val
+    if first.key == key
+      return first.val
     else
-      node_to_check = @head.next
+      node_to_check = first.next
     end
 
     until node_to_check.nil?
@@ -75,18 +73,18 @@ class LinkedList
   end
 
   def get_node(key)
-    if @head.key == key
-      return @head
+    if first.key == key
+      return first
     else
-      node_to_check = @head.next
+      node_to_check = first.next
     end
 
-    until node_to_check == @tail
+    until node_to_check == last
       return node_to_check if node_to_check.key == key
       node_to_check = node_to_check.next
     end
 
-    return @tail if @tail.key == key
+    return last if last.key == key
     nil
   end
 
@@ -96,13 +94,10 @@ class LinkedList
 
   def append(key, val)
     new_node = Node.new(key, val)
-    @tail.next = new_node
-    new_node.prev = @tail
-    if @tail.prev == @head && @head.key.nil?
-      @head.remove
-      @head = @tail
-    end
-    @tail = new_node
+    last.next = new_node
+    new_node.prev = last
+    new_node.next = @tail
+    @tail.prev = new_node
   end
 
   def update(key, val)
@@ -115,9 +110,9 @@ class LinkedList
 
   def each(&prc)
     values = []
-    values << prc.call(@head)
-    next_node = @head.next
-    until next_node.nil?
+    values << prc.call(first)
+    next_node = first.next
+    until next_node == @tail
       values << prc.call(next_node)
       next_node = next_node.next
     end
